@@ -1,0 +1,64 @@
+{
+  "skill_name": "startupideas",
+  "evals": [
+    {
+      "id": 0,
+      "name": "domain-expert-full-funnel",
+      "prompt": "I'm a physical therapist and I've been thinking about building something on the side. I know the rehab/mobility world pretty well. Can you find me a startup idea that's actually validated - like something people are literally asking for, not just a hunch?",
+      "expected_output": "An opportunity brief grounded in a real subreddit cluster, with linked verbatim quotes, a competitor audit, and a specific angle. Should use the stated domain edge (rehab/PT) rather than drifting to a generic niche.",
+      "files": [],
+      "assertions": [
+        "Cites at least 5 distinct, well-formed source URLs (reddit permalinks, review pages, or product pages) rather than unsourced assertions.",
+        "Includes at least 3 verbatim user quotes, each attributed to a specific linked thread or review.",
+        "Every quantitative claim (member counts, review counts, star ratings, thread counts) is either linked to a source or explicitly marked as an estimate.",
+        "Explicitly names any source it could not retrieve, rather than silently omitting it or substituting a guess.",
+        "Names at least one specific existing product or tool that already addresses the space, sourced from what users actually mention.",
+        "Stays within the user's stated domain edge (rehab / physical therapy / mobility) rather than drifting to an unrelated niche.",
+        "Identifies a named subreddit cluster (2+ related subreddits) rather than a single subreddit or no subreddit at all.",
+        "States a 'why now' - a specific recent change that opens the window.",
+        "Gives a positioning statement that names a segment, a pain, a category, an outcome, and a specific incumbent it beats.",
+        "Specifies an MVP test with a concrete kill number or success threshold set in advance.",
+        "Distinguishes signal strength - says how many independent threads support the main pain, not just that people complain."
+      ]
+    },
+    {
+      "id": 1,
+      "name": "named-product-audit",
+      "prompt": "everyone i know who does 3d printing complains about slicer software. is there actually a business there or is it just noise? want to know what specifically people hate about cura/prusaslicer and whether theres a gap",
+      "expected_output": "A competitor-audit-heavy answer: specific complaints sourced from reviews/threads with links, a judgment on whether the gap is structural, and an honest verdict that may be 'no business here'.",
+      "files": [],
+      "assertions": [
+        "Cites at least 5 distinct, well-formed source URLs (reddit permalinks, review pages, or product pages) rather than unsourced assertions.",
+        "Includes at least 3 verbatim user quotes, each attributed to a specific linked thread or review.",
+        "Every quantitative claim (member counts, review counts, star ratings, thread counts) is either linked to a source or explicitly marked as an estimate.",
+        "Explicitly names any source it could not retrieve, rather than silently omitting it or substituting a guess.",
+        "Names at least one specific existing product or tool that already addresses the space, sourced from what users actually mention.",
+        "Sorts complaints into distinct categories (missing features, usability/UX, bugs/reliability, pricing) rather than one undifferentiated list.",
+        "Addresses why the incumbents have not fixed the complaints - a structural-gap judgment, not just a list of flaws.",
+        "Notes that the main incumbents are free and open source, and reckons with what that does to willingness to pay.",
+        "Delivers a direct verdict on the user's actual question ('is there a business here or is it just noise'), including the possibility that the answer is no.",
+        "Quantifies complaint frequency (e.g. 'N of M threads/reviews mention X') rather than asserting 'users say X'."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "niche-discovery-shortlist",
+      "prompt": "help me find an underserved niche subreddit i could build a tool for. i'm a solo dev, python/react, no particular domain. show me a few options with the actual evidence not just vibes",
+      "expected_output": "Multiple candidate subreddits with fetched member counts, growth reads, why-now statements, and a scored comparison table. Evidence links throughout.",
+      "files": [],
+      "assertions": [
+        "Cites at least 5 distinct, well-formed source URLs (reddit permalinks, review pages, or product pages) rather than unsourced assertions.",
+        "Includes at least 3 verbatim user quotes, each attributed to a specific linked thread or review.",
+        "Every quantitative claim (member counts, review counts, star ratings, thread counts) is either linked to a source or explicitly marked as an estimate.",
+        "Explicitly names any source it could not retrieve, rather than silently omitting it or substituting a guess.",
+        "Names at least one specific existing product or tool that already addresses the space, sourced from what users actually mention.",
+        "Presents 3 or more candidate niches, not a single recommendation.",
+        "Reports a member count for each candidate subreddit.",
+        "Applies a size filter and explains it - favouring mid-sized communities over massive general ones.",
+        "Gives a growth or activity read per candidate (post velocity, recency, milestone posts, or top-of-month vs top-of-all-time), not just static size.",
+        "Includes a comparison table scoring candidates across multiple dimensions.",
+        "Ties feasibility to the user's stated stack (solo dev, python/react) when ranking."
+      ]
+    }
+  ]
+}
