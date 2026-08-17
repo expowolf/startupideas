@@ -44,7 +44,9 @@ nothing. Often it's the real one, and it's free, which sets a hard floor on pric
 
 Two underrated sources: **GitHub issues** on any open-source competitor are a
 feature-request list sorted by demand, with the maintainers' own reasons for declining
-attached. And **support forums or Discords** show the problems that never make it to a
+attached. Cite them as full URLs (`https://github.com/<owner>/<repo>/issues/<n>`) rather
+than as bare issue numbers — the number alone makes the reader search for what you already
+had open. And **support forums or Discords** show the problems that never make it to a
 public review, because the user was still hoping for a fix.
 
 ## Handling blocked or JS-only sources

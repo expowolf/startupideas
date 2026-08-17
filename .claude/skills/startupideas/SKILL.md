@@ -23,6 +23,11 @@ Concretely:
 
 - **Quotes are verbatim and linked.** If you paraphrase, mark it as a paraphrase. Never
   compose a quote that "sounds like" what a user would say.
+- **A link means a resolvable URL, not an identifier.** `PrusaSlicer #4898` and
+  `AnkiDroid #7959` are precise and checkable, but the reader has to go hunting. Write
+  `https://github.com/prusa3d/PrusaSlicer/issues/4898` instead — most identifiers expand
+  into a URL mechanically, so there's rarely a reason not to. The test is whether the user
+  can verify a claim in one click; anything more than that and the citation is decorative.
 - **Numbers come from a page you fetched.** Subscriber counts, review counts, star
   ratings, video view counts — fetch them or omit them. Do not estimate a subreddit's
   size from vibes.
