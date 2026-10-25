@@ -1,0 +1,39 @@
+name: Nightly data snapshot
+
+on:
+  schedule:
+    - cron: "37 22 * * 1-5" # 22:37 UTC, after the US close (6:37pm ET summer / 5:37pm winter)
+  workflow_dispatch:
+
+concurrency:
+  group: data-branch
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: engine/requirements.txt
+      - run: pip install -r engine/requirements.txt
+      - name: Fetch current data branch (keeps backtest results)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: git clone -q --depth 1 --branch data "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" out || mkdir -p out
+      - name: Build snapshot
+        working-directory: engine
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: python -m scripts.snapshot ../watchlist.txt ../out
+      - name: Publish to data branch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: .github/scripts/publish-data.sh out "Snapshot $(date -u +%F)"

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LineChart, FlaskConical, NotebookPen, Settings, X } from "lucide-react";
 import { useWatchlist } from "@/lib/watchlist";
+import { MODE, REPO, useSnapshotIndex } from "@/lib/engine";
 import { cn } from "@/lib/utils";
 
 const NAV: { label: string; href: string; icon: typeof LineChart; ready: boolean; phase?: number }[] = [
@@ -14,7 +15,11 @@ const NAV: { label: string; href: string; icon: typeof LineChart; ready: boolean
 
 export function Sidebar() {
   const path = usePathname();
-  const { list, remove } = useWatchlist();
+  const local = useWatchlist();
+  const { idx } = useSnapshotIndex();
+  // In snapshot mode the watchlist is the repo's watchlist.txt (what the nightly run covers).
+  const list = MODE === "snapshot" ? (idx?.tickers ?? []) : local.list;
+  const remove = MODE === "snapshot" ? null : local.remove;
   return (
     <aside className="hidden w-52 shrink-0 flex-col border-r border-line bg-panel md:flex">
       <Link href="/" className="px-4 py-4 text-sm font-semibold tracking-wide">
@@ -40,12 +45,19 @@ export function Sidebar() {
             <Link href={`/t/${t}`} className={cn("num flex-1 px-2 py-1 text-sm text-accent", path === `/t/${t}` && "font-semibold")}>
               {t}
             </Link>
-            <button onClick={() => remove(t)} aria-label={`Remove ${t}`} className="px-2 text-muted opacity-0 group-hover:opacity-100">
-              <X className="size-3" />
-            </button>
+            {remove && (
+              <button onClick={() => remove(t)} aria-label={`Remove ${t}`} className="px-2 text-muted opacity-0 group-hover:opacity-100">
+                <X className="size-3" />
+              </button>
+            )}
           </li>
         ))}
       </ul>
+      {MODE === "snapshot" && (
+        <a href={`https://github.com/${REPO}/edit/main/watchlist.txt`} target="_blank" rel="noreferrer" className="mx-4 mt-2 text-[11px] text-accent hover:underline">
+          Edit watchlist on GitHub
+        </a>
+      )}
     </aside>
   );
 }

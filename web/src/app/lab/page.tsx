@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, FlaskConical } from "lucide-react";
-import { api, useApi, type Point } from "@/lib/engine";
+import { api, dataFile, MODE, REPO, useApi, type Point } from "@/lib/engine";
 import { cn } from "@/lib/utils";
 import { Panel } from "@/components/Panel";
 import { EquityChart } from "@/components/charts";
@@ -96,6 +96,22 @@ export default function LabPage() {
   const [err, setErr] = useState<string | null>(null);
   const [res, setRes] = useState<Result | null>(null);
   const variants = useApi<Record<string, number>>("/api/backtest/variants");
+  const [requestJson, setRequestJson] = useState<string | null>(null);
+  const [latestAt, setLatestAt] = useState<string | null>(null);
+  const actionUrl = `https://github.com/${REPO}/actions/workflows/backtest.yml`;
+
+  async function loadLatest() {
+    try {
+      const l = await dataFile<{ ok: boolean; run_at: string; result?: Result; error?: string }>("backtests/latest.json");
+      setLatestAt(l.run_at);
+      if (l.ok && l.result) { setRes(l.result); setErr(null); } else setErr(`Last GitHub run failed: ${l.error}`);
+    } catch {
+      setLatestAt(null);
+    }
+  }
+  useEffect(() => {
+    if (MODE === "snapshot") loadLatest();
+  }, []);
 
   function pick(k: Key) {
     setKey(k); setParams(STRATS[k].defaults); setExec({ ...STRATS[k].exec, slippage_bps: exec.slippage_bps, commission_bps: exec.commission_bps });
@@ -107,6 +123,7 @@ export default function LabPage() {
   async function runIt() {
     setBusy(true); setErr(null);
     try {
+      if (MODE === "snapshot" && csv) throw new Error("CSV upload needs a live engine; in snapshot mode backtests run on GitHub with tickers.");
       const gridObj = wf ? Object.fromEntries(grid.split("\n").filter((l) => l.includes(":")).map((l) => {
         const [k, vs] = l.split(":");
         return [k.trim(), vs.split(",").map(parseVal)];
@@ -120,6 +137,10 @@ export default function LabPage() {
         oos_frac: Number(oos) / 100,
         regime, walk_forward: wf, grid: gridObj,
       };
+      if (MODE === "snapshot") {
+        setRequestJson(JSON.stringify(body));
+        return;
+      }
       setRes(await api<Result>("/api/backtest", { method: "POST", body: JSON.stringify(body) }));
       variants.reload();
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
@@ -171,11 +192,29 @@ export default function LabPage() {
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={wf} onChange={(e) => setWf(e.target.checked)} className="accent-[var(--accent)]" /> Walk-forward</label>
           {wf && <label className="text-xs text-muted">Grid (one parameter per line, values comma separated)<textarea rows={2} className={cn(input, "num w-72")} value={grid} onChange={(e) => setGrid(e.target.value)} /></label>}
           <button onClick={runIt} disabled={busy} className="ml-auto flex items-center gap-2 rounded bg-accent px-4 py-1.5 text-sm font-medium text-bg disabled:opacity-60">
-            <FlaskConical className="size-4" /> {busy ? "Running…" : "Run backtest"}
+            <FlaskConical className="size-4" /> {busy ? "Running…" : MODE === "snapshot" ? "Prepare GitHub run" : "Run backtest"}
           </button>
         </div>
         {variants.data && <Note>Variants tried so far: {Object.entries(variants.data).map(([k, n]) => `${k} ${n}`).join(" · ") || "none"}.</Note>}
         {err && <p className="mt-2 text-sm text-down">{err}</p>}
+        {MODE === "snapshot" && (
+          <div className="mt-3 rounded border border-line bg-panel-2 p-3 text-sm">
+            <p className="text-muted">
+              Backtests run on GitHub (no engine needed). 1) Prepare the run above. 2) Copy the request. 3) On GitHub click <b>Run workflow</b>, paste it, run. 4) After ~2-5 minutes, load the result here.
+            </p>
+            {requestJson && (
+              <div className="mt-2 flex items-center gap-2">
+                <code className="num flex-1 truncate rounded border border-line bg-bg px-2 py-1 text-xs">{requestJson}</code>
+                <button onClick={() => navigator.clipboard.writeText(requestJson)} className="rounded border border-line px-2 py-1 text-xs hover:border-accent">Copy</button>
+              </div>
+            )}
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-xs">
+              <a href={actionUrl} target="_blank" rel="noreferrer" className="text-accent hover:underline">Open the backtest Action on GitHub</a>
+              <button onClick={loadLatest} className="text-accent hover:underline">Load latest result</button>
+              <span className="num text-muted">{latestAt ? `latest run ${latestAt}` : "no runs yet"}</span>
+            </div>
+          </div>
+        )}
       </Panel>
 
       {res && (

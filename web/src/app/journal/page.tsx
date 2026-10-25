@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-import { api, useApi } from "@/lib/engine";
+import { api, MODE, useApi } from "@/lib/engine";
+import { exportJson, importJson } from "@/lib/localJournal";
 import { EMOTIONS, SETUPS } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 import { Panel } from "@/components/Panel";
@@ -80,7 +81,38 @@ export default function JournalPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Trade journal</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-xl font-semibold">Trade journal</h1>
+        {MODE === "snapshot" && (
+          <div className="ml-auto flex items-center gap-3 text-xs">
+            <span className="text-muted">Saved in this browser only. Back it up:</span>
+            <button
+              className="text-accent hover:underline"
+              onClick={() => {
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(new Blob([exportJson()], { type: "application/json" }));
+                a.download = `swingdesk-journal-${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+              }}
+            >
+              Export
+            </button>
+            <label className="cursor-pointer text-accent hover:underline">
+              Import
+              <input
+                type="file"
+                accept="application/json"
+                className="hidden"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (!f || !confirm("Replace this browser's journal with the file?")) return;
+                  try { importJson(await f.text()); refresh(); } catch (err) { setMsg((err as Error).message); }
+                }}
+              />
+            </label>
+          </div>
+        )}
+      </div>
       <Panel title={editing ? `Edit trade #${editing}` : "New trade"} caption="Log the plan at entry; come back to fill in the exit, whether you followed the plan, and what you learned." info="R-multiple = profit per share ÷ initial risk per share (entry − stop). +2R means you made twice what you risked. Followed plan? is the most important column: it separates bad luck from bad discipline.">
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
           {[["ticker", "Ticker"], ["entry_date", "Entry date", "date"], ["entry", "Entry"], ["stop", "Stop"], ["target", "Target"], ["size", "Size (shares)"], ["exit_date", "Exit date", "date"], ["exit", "Exit price"]].map(([k, label, type]) => (
@@ -160,7 +192,7 @@ export default function JournalPage() {
             </div>
           )}
         </Async>
-        <Note>Journal entries are stored in the engine&apos;s SQLite file (engine/data/desk.db) on your computer.</Note>
+        <Note>{MODE === "snapshot" ? "Journal entries are stored in this browser (clearing site data deletes them). Export regularly." : "Journal entries are stored in the engine's SQLite file (engine/data/desk.db) on your computer."}</Note>
       </Panel>
     </div>
   );
