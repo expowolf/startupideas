@@ -13,8 +13,9 @@ from app.db import get_cached, put_cached
 FRED_TTL = 12 * 3600
 
 # Candidates from the build prompt. scripts/validate.py checks each is live before we rely on it.
+# DGS1/DGS5/DGS30 were added so the yield-curve snapshot has more than three points.
 CANDIDATE_SERIES = [
-    "DGS10", "DGS2", "DGS3MO", "T10Y2Y", "T10Y3M", "DFF",
+    "DGS10", "DGS2", "DGS3MO", "DGS1", "DGS5", "DGS30", "T10Y2Y", "T10Y3M", "DFF",
     "CPIAUCSL", "CPILFESL", "UNRATE", "ICSA", "BAMLH0A0HYM2", "VIXCLS",
 ]
 

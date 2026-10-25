@@ -63,3 +63,71 @@ def get_quarterly_income(ticker: str) -> pd.DataFrame:
     return _cached(
         f"qinc:{ticker}", EARNINGS_TTL, lambda: yf.Ticker(ticker).quarterly_income_stmt
     )
+
+
+INFO_TTL = 24 * 3600
+STATEMENT_ROWS = {
+    "income": ("income_stmt", "quarterly_income_stmt"),
+    "cashflow": ("cashflow", "quarterly_cashflow"),
+    "balance": ("balance_sheet", "quarterly_balance_sheet"),
+}
+
+
+def get_info(ticker: str) -> dict:
+    """Subset of .info we use. Note marketCap is today's value (not point-in-time)."""
+
+    def fetch() -> dict:
+        i = yf.Ticker(ticker).info or {}
+        keys = ["shortName", "sector", "industry", "marketCap", "currency", "quoteType"]
+        return {k: i.get(k) for k in keys}
+
+    return _cached(f"info:{ticker}", INFO_TTL, fetch)
+
+
+def get_statement(ticker: str, kind: str, freq: str = "quarterly") -> pd.DataFrame:
+    """Financial statement with one row per period (oldest first) and line items as columns."""
+    annual_attr, quarterly_attr = STATEMENT_ROWS[kind]
+    attr = quarterly_attr if freq == "quarterly" else annual_attr
+
+    def fetch() -> pd.DataFrame:
+        raw = getattr(yf.Ticker(ticker), attr)
+        if raw is None or raw.empty:
+            return pd.DataFrame()
+        df = raw.T.sort_index()
+        df.index = pd.to_datetime(df.index)
+        df.index.name = "Date"
+        return df.apply(pd.to_numeric, errors="coerce")
+
+    return _cached(f"stmt:{ticker}:{kind}:{freq}", EARNINGS_TTL, fetch)
+
+
+def get_option_chain(ticker: str, expiry: str) -> dict:
+    """{'calls': DataFrame, 'puts': DataFrame} for one expiry. Cached 1h (current-day data only)."""
+
+    def fetch() -> dict:
+        ch = yf.Ticker(ticker).option_chain(expiry)
+        cols = ["strike", "lastPrice", "bid", "ask", "impliedVolatility", "volume", "openInterest"]
+        return {side: getattr(ch, side)[cols].to_dict(orient="list") for side in ("calls", "puts")}
+
+    raw = _cached(f"chain:{ticker}:{expiry}", 3600, fetch)
+    return {k: pd.DataFrame(v) for k, v in raw.items()}
+
+
+def get_news(ticker: str) -> list[dict]:
+    """Recent headlines (Yahoo returns only the latest ~10-20). Normalizes old and new yfinance formats."""
+
+    def fetch() -> list[dict]:
+        out = []
+        for item in yf.Ticker(ticker).news or []:
+            c = item.get("content") or item
+            title = c.get("title")
+            when = c.get("pubDate") or c.get("providerPublishTime")
+            if isinstance(when, (int, float)):
+                when = pd.Timestamp(when, unit="s").isoformat()
+            provider = (c.get("provider") or {}).get("displayName") or c.get("publisher")
+            url = (c.get("canonicalUrl") or {}).get("url") or c.get("link")
+            if title and when:
+                out.append({"title": title, "published": str(when)[:19], "publisher": provider, "url": url})
+        return out
+
+    return _cached(f"news:{ticker}", 3600, fetch)
