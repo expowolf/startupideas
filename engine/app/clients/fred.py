@@ -7,7 +7,7 @@ from datetime import datetime
 import pandas as pd
 from fredapi import Fred
 
-from app.backoff import with_backoff
+from app.backoff import PermanentError, with_backoff
 from app.db import get_cached, put_cached
 
 FRED_TTL = 12 * 3600
@@ -26,7 +26,7 @@ STALE_DAYS = {"D": 10, "W": 21, "M": 75, "Q": 200}
 def _client() -> Fred:
     key = os.environ.get("FRED_API_KEY")
     if not key:
-        raise RuntimeError("FRED_API_KEY is not set (see .env.example)")
+        raise PermanentError("FRED_API_KEY is not set (see .env.example)")
     return Fred(api_key=key)
 
 
