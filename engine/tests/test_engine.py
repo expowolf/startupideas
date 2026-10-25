@@ -92,3 +92,16 @@ def test_api(monkeypatch):
     assert r["ticker"] == "AAPL" and r["bars"][0]["Date"] == "2024-01-01"
     assert c.get("/api/prices/bad;ticker").status_code == 400
     assert c.get("/api/macro/NOTREAL").status_code == 404
+
+
+def test_backoff_does_not_retry_permanent_errors():
+    from app.backoff import PermanentError
+    calls = []
+
+    def missing_key():
+        calls.append(1)
+        raise PermanentError("no key")
+
+    with pytest.raises(PermanentError):
+        with_backoff(missing_key, sleep=lambda s: pytest.fail("should not sleep"))
+    assert len(calls) == 1

@@ -4,7 +4,7 @@ from __future__ import annotations
 import pandas as pd
 import yfinance as yf
 
-from app.backoff import with_backoff
+from app.backoff import PermanentError, with_backoff
 from app.db import get_cached, put_cached
 
 PRICE_TTL = 12 * 3600
@@ -30,7 +30,7 @@ def get_history(ticker: str, period: str = "max") -> pd.DataFrame:
     def fetch() -> pd.DataFrame:
         df = yf.Ticker(ticker).history(period=period, interval="1d", auto_adjust=True)
         if df.empty:
-            raise ValueError(f"No price data for {ticker}")
+            raise PermanentError(f"No price data for {ticker} (delisted, misspelled, or Yahoo is refusing this IP)")
         df = df[OHLCV].copy()
         df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
         df.index.name = "Date"
