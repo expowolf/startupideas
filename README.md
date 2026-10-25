@@ -37,8 +37,8 @@ GitHub Action "Run backtest" (you click Run) -> data branch -> Lab "Load latest 
 
 - **Data:** the *Nightly data snapshot* Action runs every weekday at 22:37 UTC. It runs every
   analysis for the tickers in [`watchlist.txt`](watchlist.txt) and publishes JSON to the `data` branch.
-  To add a ticker, edit `watchlist.txt` on GitHub (max 60); it appears after the next run, or run
-  the Action by hand: Actions -> *Nightly data snapshot* -> *Run workflow*.
+  To add a ticker, edit `watchlist.txt` on GitHub (max 60); a fresh snapshot starts automatically when
+  you commit the change (~5-10 min), or run the Action by hand: Actions -> *Nightly data snapshot* -> *Run workflow*.
 - **Macro + regime badge:** add a free FRED key as a repo secret named `FRED_API_KEY`
   (Settings -> Secrets and variables -> Actions). Without it those panels stay empty.
 - **Journal:** stored in your browser. Use *Export* on the Journal page to back it up.

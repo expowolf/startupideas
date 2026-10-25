@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "37 22 * * 1-5" # 22:37 UTC, after the US close (6:37pm ET summer / 5:37pm winter)
   workflow_dispatch:
+  push: # editing the watchlist (or the engine) refreshes the data right away
+    branches: [main]
+    paths:
+      - watchlist.txt
+      - "engine/**"
+      - .github/workflows/snapshot.yml
 
 concurrency:
   group: data-branch
