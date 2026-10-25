@@ -147,3 +147,12 @@ def test_journal_roundtrip_and_analytics(fake):
     assert fake.put(f"/api/journal/{a}", json={**base, "note": "edited"}).status_code == 200
     assert fake.delete(f"/api/journal/{a}").status_code == 200
     assert fake.post("/api/journal", json={**base, "emotion": "greedy"}).status_code == 422
+
+
+def test_earnings_for_a_fund_is_empty_not_an_error(fake, monkeypatch):
+    # yfinance returns an empty frame for ETFs; after the SQLite cache round-trip its index is not datetime.
+    empty = pd.DataFrame(columns=["EPS Estimate", "Reported EPS", "Surprise(%)"])
+    monkeypatch.setattr(yahoo, "get_earnings_dates", lambda t, limit=40: empty)
+    r = fake.get("/api/earnings/SPY")
+    assert r.status_code == 200, r.text
+    assert r.json()["quarters"] == [] and r.json()["next_date"] is None

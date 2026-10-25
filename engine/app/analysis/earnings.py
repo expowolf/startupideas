@@ -25,6 +25,9 @@ def reaction_index(dates: pd.DatetimeIndex, when: pd.Timestamp) -> tuple[int | N
 def events(ticker: str, prices: pd.DataFrame | None = None, limit: int = 40) -> pd.DataFrame:
     """One row per reported quarter: estimate, actual, surprise, reaction-day index and returns."""
     e = yahoo.get_earnings_dates(ticker, limit)
+    if e.empty:
+        return pd.DataFrame()
+    e.index = pd.to_datetime(e.index)
     prices = prices if prices is not None else yahoo.get_history(ticker)
     close, idx = prices["Close"], prices.index
     rows = []
@@ -52,6 +55,9 @@ def events(ticker: str, prices: pd.DataFrame | None = None, limit: int = 40) -> 
 
 def next_date(ticker: str) -> pd.Timestamp | None:
     e = yahoo.get_earnings_dates(ticker, 12)
+    if e.empty:  # funds (SPY, sector ETFs) have no earnings
+        return None
+    e.index = pd.to_datetime(e.index)
     upcoming = e[(e["Reported EPS"].isna()) & (e.index >= pd.Timestamp(datetime.now().date()))]
     return pd.Timestamp(upcoming.index.min()) if len(upcoming) else None
 
