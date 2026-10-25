@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* Terminal palette. Green/red are reserved for direction (up/down), never decoration. */
+:root {
+  --bg: #0b111b;
+  --panel: #121a27;
+  --panel-2: #172132;
+  --line: #223049;
+  --text: #e6ebf2;
+  --muted: #8592a6;
+  --accent: #3b9eff;
+  --up: #22c55e;
+  --down: #ef4444;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+/* Tabular figures so columns of numbers line up. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.landing-glow {
+  background:
+    radial-gradient(40% 50% at 30% 40%, #3b9eff22, transparent 70%),
+    radial-gradient(35% 45% at 70% 60%, #c084fc18, transparent 70%);
+  animation: drift 24s ease-in-out infinite alternate;
+}
+@keyframes drift {
+  to { transform: translate3d(4%, -3%, 0) scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-glow { animation: none; }
+}

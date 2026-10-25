@@ -1,6 +1,7 @@
 """Swing Desk engine. Run: uvicorn app.main:app --reload --port 8000 (from /engine)."""
 from __future__ import annotations
 
+import os
 import re
 
 from dotenv import load_dotenv
@@ -14,7 +15,8 @@ from app.clients import fred, yahoo  # noqa: E402  (env must load first)
 app = FastAPI(title="Swing Desk Engine")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    # Add your Vercel URL here (comma-separated) when the UI is deployed there.
+    allow_origins=os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(","),
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
