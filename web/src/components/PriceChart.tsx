@@ -10,21 +10,26 @@ import {
   type ISeriesApi,
   type UTCTimestamp,
 } from "lightweight-charts";
-import type { Bar } from "@/lib/engine";
+import type { Bar, Point } from "@/lib/engine";
 import { sma } from "@/lib/indicators";
+import { SERIES } from "@/lib/palette";
 import { Tabs } from "./Tabs";
 
 const MAS = [
-  { period: 20, color: "#f5b942" },
-  { period: 50, color: "#3b9eff" },
-  { period: 200, color: "#c084fc" },
+  { period: 20, color: SERIES[1] },
+  { period: 50, color: SERIES[0] },
+  { period: 200, color: SERIES[2] },
 ] as const;
+
+export type Indicators = { rsi14: Point[]; rsi2: Point[]; macd: Point[]; macd_signal: Point[]; macd_hist: Point[] };
 const RANGES = ["3M", "6M", "1Y", "5Y", "Max"] as const;
 const RANGE_DAYS: Record<(typeof RANGES)[number], number | null> = { "3M": 92, "6M": 183, "1Y": 365, "5Y": 1826, Max: null };
 
 const ts = (d: string) => (Date.parse(d) / 1000) as UTCTimestamp;
 
-export function PriceChart({ bars }: { bars: Bar[] }) {
+const line = (pts: Point[]) => pts.map((p) => ({ time: ts(p.date), value: p.value }));
+
+export function PriceChart({ bars, ind }: { bars: Bar[]; ind?: Indicators | null }) {
   const el = useRef<HTMLDivElement>(null);
   const chart = useRef<IChartApi | null>(null);
   const maSeries = useRef<Record<number, ISeriesApi<"Line">>>({});
@@ -59,16 +64,32 @@ export function PriceChart({ bars }: { bars: Bar[] }) {
       s.setData(sma(closes, period).flatMap((v, i) => (v === null ? [] : [{ time: ts(bars[i].Date), value: v }])));
       maSeries.current[period] = s;
     }
+    if (ind) {
+      const opts = { lineWidth: 1, priceLineVisible: false, lastValueVisible: true } as const;
+      const r14 = c.addSeries(LineSeries, { ...opts, color: SERIES[0], title: "RSI14" }, 1);
+      r14.setData(line(ind.rsi14));
+      c.addSeries(LineSeries, { ...opts, color: SERIES[1], title: "RSI2" }, 1).setData(line(ind.rsi2));
+      for (const lvl of [70, 30]) r14.createPriceLine({ price: lvl, color: "#8592a6", lineWidth: 1, lineStyle: 2, axisLabelVisible: false, title: "" });
+      c.addSeries(HistogramSeries, { priceLineVisible: false, lastValueVisible: false }, 2).setData(
+        ind.macd_hist.map((p) => ({ time: ts(p.date), value: p.value, color: p.value >= 0 ? "#22c55e66" : "#ef444466" })),
+      );
+      c.addSeries(LineSeries, { ...opts, color: SERIES[0], title: "MACD" }, 2).setData(line(ind.macd));
+      c.addSeries(LineSeries, { ...opts, color: SERIES[1], title: "Signal" }, 2).setData(line(ind.macd_signal));
+      const panes = c.panes();
+      panes[0]?.setStretchFactor(4);
+      panes[1]?.setStretchFactor(1);
+      panes[2]?.setStretchFactor(1);
+    }
     return () => {
       c.remove();
       chart.current = null;
       maSeries.current = {};
     };
-  }, [bars]);
+  }, [bars, ind]);
 
   useEffect(() => {
     for (const { period } of MAS) maSeries.current[period]?.applyOptions({ visible: shown[period] });
-  }, [shown, bars]);
+  }, [shown, bars, ind]);
 
   useEffect(() => {
     const c = chart.current;
@@ -77,7 +98,7 @@ export function PriceChart({ bars }: { bars: Bar[] }) {
     if (days === null) return c.timeScale().fitContent();
     const last = ts(bars[bars.length - 1].Date);
     c.timeScale().setVisibleRange({ from: (last - days * 86400) as UTCTimestamp, to: last });
-  }, [range, bars]);
+  }, [range, bars, ind]);
 
   return (
     <div>
@@ -92,7 +113,8 @@ export function PriceChart({ bars }: { bars: Bar[] }) {
           ))}
         </div>
       </div>
-      <div ref={el} className="h-[420px] w-full" />
+      <div ref={el} className={ind ? "h-[640px] w-full" : "h-[420px] w-full"} />
+      {ind && <p className="mt-1 text-[11px] text-muted">Panes: price + volume · RSI(14) and RSI(2) with 70/30 lines · MACD(12,26,9) with histogram.</p>}
     </div>
   );
 }

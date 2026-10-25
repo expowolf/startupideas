@@ -1,14 +1,15 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LineChart, FlaskConical, NotebookPen, X } from "lucide-react";
+import { LineChart, FlaskConical, NotebookPen, Settings, X } from "lucide-react";
 import { useWatchlist } from "@/lib/watchlist";
 import { cn } from "@/lib/utils";
 
-const NAV = [
+const NAV: { label: string; href: string; icon: typeof LineChart; ready: boolean; phase?: number }[] = [
   { label: "Ticker", href: "/", icon: LineChart, ready: true },
-  { label: "Journal", href: "/journal", icon: NotebookPen, ready: false, phase: 6 },
-  { label: "Backtest Lab", href: "/lab", icon: FlaskConical, ready: false, phase: 7 },
+  { label: "Journal", href: "/journal", icon: NotebookPen, ready: true },
+  { label: "Backtest Lab", href: "/lab", icon: FlaskConical, ready: true },
+  { label: "Settings", href: "/settings", icon: Settings, ready: true },
 ];
 
 export function Sidebar() {
