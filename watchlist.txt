@@ -1,0 +1,7 @@
+# Tickers the nightly snapshot covers (one per line, max 60). Edit and commit;
+# the next run picks them up. SPY and the sector ETFs are fetched automatically.
+SPY
+AAPL
+MSFT
+NVDA
+AMZN

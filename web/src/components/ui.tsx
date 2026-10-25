@@ -1,7 +1,7 @@
 "use client";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { ENGINE_URL } from "@/lib/engine";
+import { ENGINE_URL, MODE } from "@/lib/engine";
 
 export function Stat({ label, value, hint, tone }: { label: string; value: ReactNode; hint?: string; tone?: "up" | "down" | null }) {
   return (
@@ -17,10 +17,10 @@ export function Loading({ h = 200 }: { h?: number }) {
 }
 
 export function ErrorBox({ error }: { error: string }) {
-  const offline = /fetch|network|Failed/i.test(error);
+  const offline = MODE === "live" && /fetch|network|Failed/i.test(error);
   return (
     <div className="rounded border border-line bg-panel-2 p-3 text-sm">
-      <p className="text-muted">{offline ? "Engine not reachable." : "No data."}</p>
+      <p className="text-muted">{offline ? "Engine not reachable." : MODE === "snapshot" ? "Not in today's snapshot." : "No data."}</p>
       <p className="mt-1 break-words text-xs text-muted/80">{error}</p>
       {offline && (
         <p className="mt-2 text-xs text-muted">

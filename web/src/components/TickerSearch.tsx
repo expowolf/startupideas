@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MODE } from "@/lib/engine";
 
 export function TickerSearch({ className, autoFocus }: { className?: string; autoFocus?: boolean }) {
   const [q, setQ] = useState("");
@@ -21,7 +22,7 @@ export function TickerSearch({ className, autoFocus }: { className?: string; aut
         value={q}
         onChange={(e) => setQ(e.target.value)}
         autoFocus={autoFocus}
-        placeholder="Ticker, e.g. NVDA"
+        placeholder={MODE === "snapshot" ? "Ticker from your watchlist" : "Ticker, e.g. NVDA"}
         aria-label="Search ticker"
         className="w-full bg-transparent text-sm outline-none placeholder:text-muted"
       />
