@@ -1,0 +1,1 @@
+{"generated_at":"2026-11-07T02:16+00:00","tickers":["SPY","AAPL","MSFT","NVDA","AMZN"],"requested":["SPY","AAPL","MSFT","NVDA","AMZN"],"errors":{"_market":{"regime":"PermanentError: FRED_API_KEY is not set (see .env.example)"}}}
